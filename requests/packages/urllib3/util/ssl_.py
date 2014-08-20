@@ -95,7 +95,7 @@ def resolve_ssl_version(candidate):
 if SSLContext is not None:  # Python 3.2+
     def ssl_wrap_socket(sock, keyfile=None, certfile=None, cert_reqs=None,
                         ca_certs=None, server_hostname=None,
-                        ssl_version=None):
+                        ssl_version=None, ciphers=None):
         """
         All arguments except `server_hostname` have the same meaning as for
         :func:`ssl.wrap_socket`
@@ -120,6 +120,8 @@ if SSLContext is not None:  # Python 3.2+
         if certfile:
             # FIXME: This block needs a test.
             context.load_cert_chain(certfile, keyfile)
+        if ciphers:
+            context.set_ciphers(ciphers)
         if HAS_SNI:  # Platform-specific: OpenSSL with enabled SNI
             return context.wrap_socket(sock, server_hostname=server_hostname)
         return context.wrap_socket(sock)
@@ -127,7 +129,7 @@ if SSLContext is not None:  # Python 3.2+
 else:  # Python 3.1 and earlier
     def ssl_wrap_socket(sock, keyfile=None, certfile=None, cert_reqs=None,
                         ca_certs=None, server_hostname=None,
-                        ssl_version=None):
+                        ssl_version=None, ciphers=None):
         return wrap_socket(sock, keyfile=keyfile, certfile=certfile,
                            ca_certs=ca_certs, cert_reqs=cert_reqs,
-                           ssl_version=ssl_version)
+                           ssl_version=ssl_version, ciphers=ciphers)

@@ -118,7 +118,7 @@ class HTTPAdapter(BaseAdapter):
         self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize,
                                        block=block)
 
-    def cert_verify(self, conn, url, verify, cert):
+    def cert_verify(self, conn, url, verify, cert, ciphers):
         """Verify a SSL certificate. This method should not be called from user
         code, and is only exposed for use when subclassing the
         :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.
@@ -127,6 +127,7 @@ class HTTPAdapter(BaseAdapter):
         :param url: The requested URL.
         :param verify: Whether we should actually verify the certificate.
         :param cert: The SSL certificate to verify.
+        :param ciphers: A list of supported ciphers to pass along to SSL
         """
         if url.lower().startswith('https') and verify:
 
@@ -154,6 +155,8 @@ class HTTPAdapter(BaseAdapter):
                 conn.key_file = cert[1]
             else:
                 conn.cert_file = cert
+        if ciphers:
+            conn.ciphers = ':'.join(ciphers)
 
     def build_response(self, req, resp):
         """Builds a :class:`Response <requests.Response>` object from a urllib3
@@ -291,7 +294,7 @@ class HTTPAdapter(BaseAdapter):
 
         return headers
 
-    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None, ciphers=None):
         """Sends PreparedRequest object. Returns Response object.
 
         :param request: The :class:`PreparedRequest <PreparedRequest>` being sent.
@@ -300,11 +303,12 @@ class HTTPAdapter(BaseAdapter):
         :param verify: (optional) Whether to verify SSL certificates.
         :param cert: (optional) Any user-provided SSL certificate to be trusted.
         :param proxies: (optional) The proxies dictionary to apply to the request.
+        :param ciphers: (optional) A list of ciphers to allow, sent to the server in the SSL handshake
         """
 
         conn = self.get_connection(request.url, proxies)
 
-        self.cert_verify(conn, request.url, verify, cert)
+        self.cert_verify(conn, request.url, verify, cert, ciphers)
         url = self.request_url(request, proxies)
         self.add_headers(request)
 

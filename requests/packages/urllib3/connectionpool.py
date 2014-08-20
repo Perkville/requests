@@ -601,7 +601,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
                  block=False, headers=None,
                  _proxy=None, _proxy_headers=None,
                  key_file=None, cert_file=None, cert_reqs=None,
-                 ca_certs=None, ssl_version=None,
+                 ca_certs=None, ssl_version=None, ciphers=None,
                  assert_hostname=None, assert_fingerprint=None,
                  **conn_kw):
 
@@ -615,6 +615,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
         self.cert_reqs = cert_reqs
         self.ca_certs = ca_certs
         self.ssl_version = ssl_version
+        self.ciphers = ciphers
         self.assert_hostname = assert_hostname
         self.assert_fingerprint = assert_fingerprint
         self.conn_kw = conn_kw
@@ -634,6 +635,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
                           assert_fingerprint=self.assert_fingerprint)
             conn.ssl_version = self.ssl_version
             conn.conn_kw = self.conn_kw
+            conn.ciphers = self.ciphers
 
         if self.proxy is not None:
             # Python 2.7+
