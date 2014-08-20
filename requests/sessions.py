@@ -87,7 +87,7 @@ def merge_hooks(request_hooks, session_hooks, dict_class=OrderedDict):
 
 class SessionRedirectMixin(object):
     def resolve_redirects(self, resp, req, stream=False, timeout=None,
-                          verify=True, cert=None, proxies=None):
+                          verify=True, cert=None, proxies=None, ciphers=None):
         """Receives a Response. Returns a generator of Responses."""
 
         i = 0
@@ -180,6 +180,7 @@ class SessionRedirectMixin(object):
                 cert=cert,
                 proxies=proxies,
                 allow_redirects=False,
+                ciphers=ciphers,
             )
 
             extract_cookies_to_jar(self.cookies, prepared_request, resp.raw)
@@ -266,7 +267,7 @@ class Session(SessionRedirectMixin):
     __attrs__ = [
         'headers', 'cookies', 'auth', 'timeout', 'proxies', 'hooks',
         'params', 'verify', 'cert', 'prefetch', 'adapters', 'stream',
-        'trust_env', 'max_redirects', 'redirect_cache']
+        'trust_env', 'max_redirects', 'redirect_cache', 'ciphers']
 
     def __init__(self):
 
@@ -300,6 +301,9 @@ class Session(SessionRedirectMixin):
 
         #: SSL certificate default.
         self.cert = None
+
+        #: SSL ciphers default
+        self.ciphers = None
 
         #: Maximum number of redirects allowed. If the request exceeds this
         #: limit, a :class:`TooManyRedirects` exception is raised.
@@ -379,7 +383,8 @@ class Session(SessionRedirectMixin):
         hooks=None,
         stream=None,
         verify=None,
-        cert=None):
+        cert=None,
+        ciphers=None):
         """Constructs a :class:`Request <Request>`, prepares it and sends it.
         Returns :class:`Response <Response>` object.
 
@@ -448,6 +453,7 @@ class Session(SessionRedirectMixin):
         stream = merge_setting(stream, self.stream)
         verify = merge_setting(verify, self.verify)
         cert = merge_setting(cert, self.cert)
+        ciphers = merge_setting(ciphers, self.ciphers)
 
         # Send the request.
         send_kwargs = {
@@ -457,6 +463,7 @@ class Session(SessionRedirectMixin):
             'cert': cert,
             'proxies': proxies,
             'allow_redirects': allow_redirects,
+            'ciphers': ciphers
         }
         resp = self.send(prep, **send_kwargs)
 
@@ -539,6 +546,7 @@ class Session(SessionRedirectMixin):
         kwargs.setdefault('verify', self.verify)
         kwargs.setdefault('cert', self.cert)
         kwargs.setdefault('proxies', self.proxies)
+        kwargs.setdefault('ciphers', self.ciphers)
 
         # It's possible that users might accidentally send a Request object.
         # Guard against that specific failure case.
@@ -555,6 +563,7 @@ class Session(SessionRedirectMixin):
         verify = kwargs.get('verify')
         cert = kwargs.get('cert')
         proxies = kwargs.get('proxies')
+        ciphers = kwargs.get('ciphers')
         hooks = request.hooks
 
         # Get the appropriate adapter to use
@@ -587,7 +596,8 @@ class Session(SessionRedirectMixin):
             timeout=timeout,
             verify=verify,
             cert=cert,
-            proxies=proxies)
+            proxies=proxies,
+            ciphers=ciphers)
 
         # Resolve redirects if allowed.
         history = [resp for resp in gen] if allow_redirects else []

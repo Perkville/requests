@@ -172,6 +172,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
     cert_reqs = None
     ca_certs = None
     ssl_version = None
+    ciphers = None
 
     def set_cert(self, key_file=None, cert_file=None,
                  cert_reqs=None, ca_certs=None,
@@ -212,7 +213,8 @@ class VerifiedHTTPSConnection(HTTPSConnection):
                                     cert_reqs=resolved_cert_reqs,
                                     ca_certs=self.ca_certs,
                                     server_hostname=hostname,
-                                    ssl_version=resolved_ssl_version)
+                                    ssl_version=resolved_ssl_version,
+                                    ciphers=self.ciphers)
 
         if resolved_cert_reqs != ssl.CERT_NONE:
             if self.assert_fingerprint:
